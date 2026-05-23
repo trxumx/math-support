@@ -2,8 +2,21 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
+  <meta name="format-detection" content="telephone=no">
   <title>МО СППР · Подготовка к экзамену</title>
+
+  <!-- PWA / iOS -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="МО СППР">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0f1419" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
   <link rel="stylesheet" href="styles.css">
@@ -18,10 +31,10 @@
       </div>
     </div>
     <nav class="tabs" role="tablist">
-      <button class="tab active" data-mode="reader" role="tab">📖 Чтение</button>
-      <button class="tab" data-mode="cards" role="tab">🃏 Карточки</button>
-      <button class="tab" data-mode="exam" role="tab">🎯 Экзамен</button>
-      <button class="tab" data-mode="theory" role="tab">📚 Теория</button>
+      <button class="tab active" data-mode="reader" role="tab"><span class="tab-icon">📖</span><span class="tab-label">Чтение</span></button>
+      <button class="tab" data-mode="cards" role="tab"><span class="tab-icon">🃏</span><span class="tab-label">Карточки</span></button>
+      <button class="tab" data-mode="exam" role="tab"><span class="tab-icon">🎯</span><span class="tab-label">Экзамен</span></button>
+      <button class="tab" data-mode="theory" role="tab"><span class="tab-icon">📚</span><span class="tab-label">Теория</span></button>
     </nav>
     <div class="header-actions">
       <button id="theme-toggle" title="Переключить тему" aria-label="Тема">🌙</button>

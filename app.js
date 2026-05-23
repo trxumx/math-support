@@ -300,7 +300,12 @@ function initCards() {
   state.cards.idx = 0;
   state.cards.flipped = false;
 
-  document.getElementById("flashcard").addEventListener("click", flipCard);
+  const fc = document.getElementById("flashcard");
+  fc.addEventListener("click", flipCard);
+  attachSwipe(fc, {
+    onSwipeLeft: () => moveCard(1),
+    onSwipeRight: () => moveCard(-1),
+  });
   document.getElementById("card-prev").addEventListener("click", () => moveCard(-1));
   document.getElementById("card-next").addEventListener("click", () => moveCard(1));
   document.getElementById("cards-shuffle").addEventListener("click", shuffleCards);
@@ -571,6 +576,36 @@ function initKeys() {
 /* ---------- Helpers ---------- */
 function escapeHTML(s) {
   return s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+/* Tap vs horizontal swipe — vertical scroll is allowed.
+   swipeHandled flag stops the subsequent click from also firing. */
+function attachSwipe(el, { onSwipeLeft, onSwipeRight, threshold = 50 } = {}) {
+  let startX = 0, startY = 0, startT = 0, swipeFired = false;
+
+  el.addEventListener("touchstart", e => {
+    if (e.touches.length !== 1) return;
+    const t = e.touches[0];
+    startX = t.clientX; startY = t.clientY;
+    startT = Date.now();
+    swipeFired = false;
+  }, { passive: true });
+
+  el.addEventListener("touchend", e => {
+    const t = e.changedTouches[0];
+    const dx = t.clientX - startX;
+    const dy = t.clientY - startY;
+    const dt = Date.now() - startT;
+    if (Math.abs(dx) > threshold && Math.abs(dx) > Math.abs(dy) * 1.3 && dt < 600) {
+      swipeFired = true;
+      if (dx < 0 && onSwipeLeft) onSwipeLeft();
+      else if (dx > 0 && onSwipeRight) onSwipeRight();
+    }
+  }, { passive: true });
+
+  el.addEventListener("click", e => {
+    if (swipeFired) { e.stopPropagation(); e.preventDefault(); swipeFired = false; }
+  }, true);
 }
 
 /* ---------- Bootstrap ---------- */
