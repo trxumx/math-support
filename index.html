@@ -23,6 +23,9 @@
 </head>
 <body>
   <header class="topbar">
+    <button id="menu-btn" class="icon-btn menu-btn" aria-label="Меню вопросов" title="Список вопросов">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
     <div class="brand">
       <span class="logo">∇</span>
       <div>
@@ -37,9 +40,11 @@
       <button class="tab" data-mode="theory" role="tab"><span class="tab-icon">📚</span><span class="tab-label">Теория</span></button>
     </nav>
     <div class="header-actions">
-      <button id="theme-toggle" title="Переключить тему" aria-label="Тема">🌙</button>
+      <button id="theme-toggle" class="icon-btn" title="Переключить тему" aria-label="Тема">🌙</button>
     </div>
   </header>
+
+  <div id="drawer-backdrop" class="drawer-backdrop" hidden></div>
 
   <main>
 

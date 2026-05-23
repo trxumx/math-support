@@ -144,6 +144,10 @@ function switchMode(mode) {
   document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
   document.getElementById(`view-${mode}`).classList.add("active");
 
+  // На мобиле: ☰ показываем только в режимах с TOC
+  document.body.classList.toggle("has-toc", mode === "reader" || mode === "theory");
+  closeDrawer();
+
   if (mode === "reader" && !document.getElementById("reader-content").dataset.rendered) {
     renderReader();
   }
@@ -153,6 +157,36 @@ function switchMode(mode) {
   if (mode === "theory" && !document.getElementById("theory-content").dataset.rendered) {
     renderTheory();
   }
+}
+
+/* ---------- Drawer (TOC на мобильнике) ---------- */
+function openDrawer() {
+  document.body.classList.add("drawer-open");
+  const bd = document.getElementById("drawer-backdrop");
+  bd.hidden = false;
+  // force reflow so transition kicks in next frame
+  void bd.offsetWidth;
+  bd.classList.add("show");
+  document.body.style.overflow = "hidden";
+}
+
+function closeDrawer() {
+  document.body.classList.remove("drawer-open");
+  document.body.style.overflow = "";
+  const bd = document.getElementById("drawer-backdrop");
+  bd.classList.remove("show");
+  setTimeout(() => { if (!bd.classList.contains("show")) bd.hidden = true; }, 280);
+}
+
+function initDrawer() {
+  document.getElementById("menu-btn").addEventListener("click", () => {
+    if (document.body.classList.contains("drawer-open")) closeDrawer();
+    else openDrawer();
+  });
+  document.getElementById("drawer-backdrop").addEventListener("click", closeDrawer);
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && document.body.classList.contains("drawer-open")) closeDrawer();
+  });
 }
 
 /* ---------- Reader ---------- */
@@ -196,12 +230,20 @@ function renderReaderTOC(questions) {
     li.dataset.qid = q.id;
     li.innerHTML = `<span class="toc-num">${q.id}</span><span class="toc-text">${escapeHTML(q.title)}</span><span class="toc-status" data-qid="${q.id}"></span>`;
     li.addEventListener("click", () => {
-      document.getElementById(`q-${q.id}`).scrollIntoView({ behavior: "smooth", block: "start" });
+      closeDrawer();
+      // Дать drawer-у закрыться, потом скроллить
+      setTimeout(() => {
+        document.getElementById(`q-${q.id}`).scrollIntoView({ behavior: "smooth", block: "start" });
+      }, isMobile() ? 280 : 0);
       document.querySelectorAll("#reader-toc li").forEach(x => x.classList.remove("active"));
       li.classList.add("active");
     });
     ol.appendChild(li);
   }
+}
+
+function isMobile() {
+  return window.matchMedia("(max-width: 700px)").matches;
 }
 
 function bindReaderEvents() {
@@ -277,7 +319,10 @@ function renderTheory() {
     li.innerHTML = `<span class="toc-num">${h.tagName === "H2" ? "§" : "·"}</span><span class="toc-text">${escapeHTML(h.textContent)}</span>`;
     if (h.tagName === "H3") li.style.paddingLeft = "26px";
     li.addEventListener("click", () => {
-      h.scrollIntoView({ behavior: "smooth", block: "start" });
+      closeDrawer();
+      setTimeout(() => {
+        h.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, isMobile() ? 280 : 0);
       document.querySelectorAll("#theory-toc li").forEach(x => x.classList.remove("active"));
       li.classList.add("active");
     });
@@ -619,10 +664,13 @@ function boot() {
   loadProgress();
   initTheme();
   initTabs();
+  initDrawer();
   initExam();
   initKeys();
   renderReader();
   updateProgressStats();
+  // Стартовая вьюшка — Reader, имеет TOC
+  document.body.classList.add("has-toc");
 }
 
 if (document.readyState === "loading") {
