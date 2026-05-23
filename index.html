@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>МО СППР · Подготовка к экзамену</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">∇</span>
+      <div>
+        <h1>МО СППР</h1>
+        <p class="subtitle">Математическое обеспечение · подготовка к сессии</p>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-mode="reader" role="tab">📖 Чтение</button>
+      <button class="tab" data-mode="cards" role="tab">🃏 Карточки</button>
+      <button class="tab" data-mode="exam" role="tab">🎯 Экзамен</button>
+      <button class="tab" data-mode="theory" role="tab">📚 Теория</button>
+    </nav>
+    <div class="header-actions">
+      <button id="theme-toggle" title="Переключить тему" aria-label="Тема">🌙</button>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Reader -->
+    <section id="view-reader" class="view active">
+      <aside class="toc">
+        <div class="toc-search">
+          <input type="search" id="reader-search" placeholder="🔍 Поиск по теме...">
+        </div>
+        <div class="toc-stats">
+          <span id="toc-progress-text">0 / 38 изучено</span>
+          <div class="progress-bar"><div id="toc-progress-fill"></div></div>
+        </div>
+        <ol id="reader-toc" class="toc-list"></ol>
+      </aside>
+      <article id="reader-content" class="reader-content"></article>
+    </section>
+
+    <!-- Cards -->
+    <section id="view-cards" class="view">
+      <div class="cards-wrap">
+        <div class="cards-header">
+          <div class="cards-meta">
+            <span id="card-position">1 / 38</span>
+            <span class="cards-stats">
+              <span class="stat stat-known">✓ <span id="stat-known">0</span></span>
+              <span class="stat stat-review">⟳ <span id="stat-review">0</span></span>
+              <span class="stat stat-unknown">✗ <span id="stat-unknown">0</span></span>
+            </span>
+          </div>
+          <div class="cards-controls">
+            <button id="cards-shuffle" class="ghost-btn">🔀 Перемешать</button>
+            <button id="cards-filter" class="ghost-btn" data-filter="all">Все</button>
+            <button id="cards-reset" class="ghost-btn danger" title="Сбросить прогресс">↺</button>
+          </div>
+        </div>
+
+        <div class="card-stage">
+          <div class="flashcard" id="flashcard">
+            <div class="card-inner">
+              <div class="card-face card-front">
+                <div class="card-number" id="card-front-num">№1</div>
+                <h2 class="card-title" id="card-front-title"></h2>
+                <p class="card-hint">Нажмите, чтобы увидеть ответ</p>
+              </div>
+              <div class="card-face card-back">
+                <div class="card-back-header">
+                  <span class="card-number" id="card-back-num">№1</span>
+                  <span class="card-back-title" id="card-back-title"></span>
+                </div>
+                <div class="card-answer" id="card-answer"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cards-nav">
+          <button id="card-prev" class="nav-btn">← Назад</button>
+          <div class="grade-buttons" id="grade-buttons" hidden>
+            <button class="grade grade-unknown" data-grade="unknown">😔 Не знаю</button>
+            <button class="grade grade-review" data-grade="review">🤔 Повторить</button>
+            <button class="grade grade-known" data-grade="known">🎉 Знаю</button>
+          </div>
+          <button id="card-next" class="nav-btn">Дальше →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Exam -->
+    <section id="view-exam" class="view">
+      <div id="exam-start" class="exam-screen">
+        <h2>🎯 Симуляция экзамена</h2>
+        <p class="exam-intro">
+          Случайные вопросы из 38. Прочти, сформулируй ответ вслух или на бумаге, потом сравни с эталоном и поставь себе оценку.
+        </p>
+        <div class="exam-config">
+          <label>
+            Сколько вопросов:
+            <select id="exam-count">
+              <option value="5">5 — экспресс</option>
+              <option value="10" selected>10 — стандарт</option>
+              <option value="15">15 — сложный</option>
+              <option value="38">38 — все подряд</option>
+            </select>
+          </label>
+          <label>
+            Источник:
+            <select id="exam-source">
+              <option value="all">Все вопросы</option>
+              <option value="weak">Только «не знаю» и «повторить»</option>
+              <option value="unseen">Те, что я ещё не отмечал</option>
+            </select>
+          </label>
+        </div>
+        <button id="exam-start-btn" class="primary-btn">Начать экзамен</button>
+      </div>
+
+      <div id="exam-active" class="exam-screen" hidden>
+        <div class="exam-progress">
+          <div class="exam-progress-text">
+            Вопрос <span id="exam-current">1</span> из <span id="exam-total">10</span>
+          </div>
+          <div class="progress-bar"><div id="exam-progress-fill"></div></div>
+        </div>
+        <div class="exam-question-card">
+          <div class="exam-q-number" id="exam-q-number">№1</div>
+          <h2 id="exam-q-title"></h2>
+          <button id="exam-show-answer" class="primary-btn">Показать ответ</button>
+          <div id="exam-answer" class="exam-answer" hidden></div>
+          <div id="exam-grade" class="exam-grade" hidden>
+            <p class="grade-prompt">Как ты ответил?</p>
+            <div class="grade-buttons">
+              <button class="grade grade-unknown" data-grade="bad">Не ответил</button>
+              <button class="grade grade-review" data-grade="ok">Частично</button>
+              <button class="grade grade-known" data-grade="good">Хорошо</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="exam-results" class="exam-screen" hidden>
+        <h2>📊 Результаты</h2>
+        <div class="results-summary" id="results-summary"></div>
+        <h3>Что повторить:</h3>
+        <ul id="results-weak" class="results-weak"></ul>
+        <div class="results-actions">
+          <button id="exam-restart" class="primary-btn">Ещё раз</button>
+          <button id="exam-review" class="ghost-btn">Перейти к слабым в «Карточки»</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Theory -->
+    <section id="view-theory" class="view">
+      <aside class="toc">
+        <div class="toc-search">
+          <input type="search" id="theory-search" placeholder="🔍 Поиск в теории...">
+        </div>
+        <ol id="theory-toc" class="toc-list"></ol>
+      </aside>
+      <article id="theory-content" class="reader-content"></article>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <span>38 вопросов · KaTeX · localStorage прогресс</span>
+    <span class="hotkeys">⌨ ←/→ навигация · Space — открыть ответ · 1/2/3 — оценка</span>
+  </footer>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
+  <script defer src="data.js"></script>
+  <script defer src="app.js"></script>
+</body>
+</html>
