@@ -46,6 +46,9 @@
 
 html {
   height: 100%;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
@@ -60,8 +63,13 @@ body {
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
-  transition: background 0.2s ease, color 0.2s ease;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
   overscroll-behavior-y: none;
+  touch-action: pan-y;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 button, .tab, .nav-btn, .grade, .ghost-btn, .primary-btn, [role="tab"] {
@@ -806,8 +814,27 @@ main {
 
 /* ------ KaTeX overrides ------ */
 .katex { font-size: 1.05em; }
-.katex-display { margin: 14px 0; overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+.katex-display {
+  margin: 14px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 0;
+  max-width: 100%;
+  /* убираем горизонтальный bounce при свайпе по формуле */
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
 .katex-display > .katex { white-space: nowrap; }
+
+/* Универсальные предохранители от горизонтального overflow */
+img, video, iframe, table, pre, code {
+  max-width: 100%;
+}
+.reader-content, .card-answer, .exam-answer {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
 
 /* ------ Scrollbars ------ */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
