@@ -11,10 +11,16 @@ OUTPUT = ROOT / "data.js"
 
 
 def normalize_math(text: str) -> str:
-    """The source uses an unusual $\\(...\\)$ wrapping for inline math.
-    Strip the inner \\( and \\) so KaTeX gets plain $...$ delimiters."""
+    """The source has two flavours of double-wrapped inline math:
+       (a) $\\(...\\)$  — dollars OUTSIDE backslash-parens
+       (b) \\($...$\\)  — backslash-parens OUTSIDE dollars
+    Both collapse to plain $...$ so KaTeX gets a single layer of delimiters."""
+    # (a) strip inner \( and \) when they're inside $...$
     text = re.sub(r"\$\\\(", "$", text)
     text = re.sub(r"\\\)\$", "$", text)
+    # (b) strip outer \( and \) when they wrap $...$
+    text = re.sub(r"\\\(\$", "$", text)
+    text = re.sub(r"\$\\\)", "$", text)
     return text
 
 
