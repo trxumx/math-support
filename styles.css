@@ -836,6 +836,68 @@ img, video, iframe, table, pre, code {
   hyphens: auto;
 }
 
+/* ------ Кросс-ссылки между Чтением и Теорией ------ */
+.theory-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 10px 14px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid transparent;
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  max-width: 100%;
+}
+.theory-link:hover {
+  background: var(--accent);
+  color: white;
+  border-left-color: var(--accent);
+}
+.theory-link-icon { font-size: 15px; line-height: 1; flex-shrink: 0; }
+.theory-link-text { line-height: 1.35; }
+.theory-link-arrow {
+  margin-left: auto;
+  padding-left: 8px;
+  opacity: 0.65;
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+.theory-link:hover .theory-link-arrow {
+  transform: translateX(2px);
+  opacity: 1;
+}
+
+.section-related {
+  margin: 6px 0 18px;
+  padding: 8px 12px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--review);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.related-label { font-weight: 600; color: var(--text-dim); }
+.related-qlink {
+  display: inline-block;
+  padding: 2px 8px;
+  margin: 2px 2px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 12px;
+  transition: background 0.15s ease;
+}
+.related-qlink:hover { background: var(--accent); color: white; }
+
 /* ------ Scrollbars ------ */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }

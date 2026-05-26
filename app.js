@@ -2,6 +2,50 @@
 const STORAGE_KEY = "mo_sppr_progress_v1";
 const THEME_KEY = "mo_sppr_theme";
 
+/* ---------- Кросс-ссылки между вопросами и теорией ----------
+ * Маппинг: id вопроса → раздел методички (по номеру).
+ * Идентификаторы разделов в DOM: theory-3-2 (из «3.2. Метод Нелдера-Мида»). */
+const Q_TO_THEORY = {
+  1: { section: "6.1", title: "Условие стационарности" },
+  2: { section: "6.1", title: "Условие стационарности" },
+  3: { section: "6.1", title: "Условие стационарности" },
+  4: { section: "6.2", title: "Условия второго порядка" },
+  11: { section: "3.1", title: "Симплексный метод" },
+  12: { section: "3.1", title: "Симплексный метод" },
+  13: { section: "3.1", title: "Симплексный метод" },
+  14: { section: "3.2", title: "Метод Нелдера-Мида" },
+  15: { section: "3.2", title: "Метод Нелдера-Мида" },
+  16: { section: "3.3", title: "Метод Хука-Дживса" },
+  17: { section: "3.3", title: "Метод Хука-Дживса" },
+  18: { section: "4.4", title: "Метод покоординатного спуска" },
+  25: { section: "4.2", title: "Градиентный спуск с дроблением шага" },
+  26: { section: "4.2", title: "Градиентный спуск с дроблением шага" },
+  27: { section: "4.3", title: "Метод наискорейшего градиентного спуска" },
+  28: { section: "4.3", title: "Метод наискорейшего градиентного спуска" },
+  29: { section: "5.1", title: "Метод Ньютона" },
+  30: { section: "5.1", title: "Метод Ньютона" },
+  31: { section: "5.2", title: "Модифицированный метод Ньютона" },
+  32: { section: "4.5", title: "Метод Флетчера-Ривса" },
+  33: { section: "4.5", title: "Метод Флетчера-Ривса" },
+  34: { section: "4.5", title: "Метод Флетчера-Ривса" },
+  35: { section: "4.5", title: "Метод сопряжённых градиентов" },
+  36: { section: "4.5", title: "Метод сопряжённых градиентов" },
+};
+
+/* Обратный маппинг: раздел теории → список вопросов */
+const THEORY_TO_Q = (() => {
+  const m = {};
+  for (const qid in Q_TO_THEORY) {
+    const sec = Q_TO_THEORY[qid].section;
+    (m[sec] = m[sec] || []).push(parseInt(qid));
+  }
+  return m;
+})();
+
+function theorySectionToId(section) {
+  return "theory-" + section.replace(/\./g, "-");
+}
+
 const state = {
   mode: "reader",
   questions: [],
@@ -214,6 +258,20 @@ function renderReader() {
     container.appendChild(block);
     const body = block.querySelector(".q-body");
     renderMarkdown(body, q.content);
+
+    // Кросс-ссылка в Теорию, если для этого вопроса есть соответствующий раздел
+    if (Q_TO_THEORY[q.id]) {
+      const ref = Q_TO_THEORY[q.id];
+      const link = document.createElement("a");
+      link.href = "#";
+      link.className = "theory-link";
+      link.innerHTML = `<span class="theory-link-icon">📚</span><span class="theory-link-text">См. в Теории: §${ref.section} — ${escapeHTML(ref.title)}</span><span class="theory-link-arrow">→</span>`;
+      link.addEventListener("click", e => {
+        e.preventDefault();
+        jumpToTheory(ref.section);
+      });
+      body.appendChild(link);
+    }
   }
   container.dataset.rendered = "1";
   updateReaderMarkButtons();
@@ -307,14 +365,35 @@ function renderTheory() {
   renderMarkdown(container, state.theory);
   container.dataset.rendered = "1";
 
-  // Build TOC from h2/h3
+  // Build TOC from h2/h3, assign stable IDs based on section number
   const toc = document.getElementById("theory-toc");
   toc.innerHTML = "";
-  let counter = 0;
+  let fallbackCounter = 0;
   container.querySelectorAll("h2, h3").forEach(h => {
-    counter++;
-    const id = `theory-h-${counter}`;
+    // Извлекаем номер секции «3.2» из текста заголовка
+    const m = h.textContent.match(/^\s*(\d+(?:\.\d+)?)/);
+    const id = m ? theorySectionToId(m[1]) : `theory-h-${++fallbackCounter}`;
     h.id = id;
+
+    // Если для этой секции есть связанные вопросы — повесить плашку под заголовок
+    const section = m ? m[1] : null;
+    if (section && THEORY_TO_Q[section]) {
+      const qids = THEORY_TO_Q[section];
+      const badge = document.createElement("div");
+      badge.className = "section-related";
+      badge.innerHTML =
+        `<span class="related-label">📝 Связанные вопросы:</span> ` +
+        qids.map(qid => `<a href="#" class="related-qlink" data-qid="${qid}">№${qid}</a>`).join(" ");
+      h.insertAdjacentElement("afterend", badge);
+      badge.querySelectorAll(".related-qlink").forEach(a => {
+        a.addEventListener("click", e => {
+          e.preventDefault();
+          jumpToQuestion(parseInt(a.dataset.qid));
+        });
+      });
+    }
+
+    // TOC item
     const li = document.createElement("li");
     li.innerHTML = `<span class="toc-num">${h.tagName === "H2" ? "§" : "·"}</span><span class="toc-text">${escapeHTML(h.textContent)}</span>`;
     if (h.tagName === "H3") li.style.paddingLeft = "26px";
@@ -337,6 +416,28 @@ function renderTheory() {
       li.classList.toggle("hidden", q && !text.includes(q));
     });
   });
+}
+
+/* Переключение режимов + плавный скролл к якорю */
+function jumpToTheory(section) {
+  switchMode("theory");
+  const id = theorySectionToId(section);
+  // Даём theory-content время отрендериться при первом переключении
+  setTimeout(() => {
+    const target = document.getElementById(id);
+    if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 80);
+}
+
+function jumpToQuestion(qid) {
+  switchMode("reader");
+  setTimeout(() => {
+    const target = document.getElementById(`q-${qid}`);
+    if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.querySelectorAll("#reader-toc li").forEach(x => x.classList.remove("active"));
+    const li = document.querySelector(`#reader-toc li[data-qid="${qid}"]`);
+    if (li) li.classList.add("active");
+  }, 80);
 }
 
 /* ---------- Cards ---------- */
